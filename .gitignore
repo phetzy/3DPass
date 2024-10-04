@@ -21,9 +21,9 @@ Thumbs.db
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-# Git 
-.gitignore
-
 # Drizzle
 ./drizzle/*.sql
 ./drizzle/meta/*
+
+# Git
+.gitignore
