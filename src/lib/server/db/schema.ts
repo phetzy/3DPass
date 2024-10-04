@@ -6,7 +6,7 @@ export const db = drizzle(sql)
 
 export const usersTable = pgTable(
     'users', {
-    uuid: uuid('uuid').primaryKey().unique().notNull(),
+    uuid: uuid('uuid').primaryKey().defaultRandom().notNull(),
     id: serial('id').unique().notNull(),
     password: varchar('password').notNull(),
     firstName: text('first_name').notNull(),
