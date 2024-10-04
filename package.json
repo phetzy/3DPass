@@ -44,6 +44,7 @@
 	"type": "module",
 	"dependencies": {
 		"@vercel/postgres": "^0.10.0",
+		"dotenv": "^16.4.5",
 		"drizzle-orm": "^0.33.0"
 	}
 }
