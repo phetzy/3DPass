@@ -1,1 +1,1 @@
-export { handle } from './lib/api/auth/auth'
+export { handle } from './auth'
