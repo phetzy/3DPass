@@ -8,6 +8,19 @@ export const getOrderById = query({
   },
 });
 
+export const listOrders = query({
+  args: { status: v.optional(v.string()) },
+  handler: async (ctx, { status }) => {
+    const all = await ctx.db.query("orders").collect();
+    const filtered = status ? all.filter((o) => o.status === status) : all;
+    filtered.sort((a, b) => b.createdAt - a.createdAt);
+    const rows = await Promise.all(
+      filtered.map(async (o) => ({ order: o, print: await ctx.db.get(o.printId) })),
+    );
+    return rows;
+  },
+});
+
 export const setStripeSessionId = mutation({
   args: { orderId: v.id("orders"), sessionId: v.string() },
   handler: async (ctx, { orderId, sessionId }) => {

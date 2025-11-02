@@ -21,7 +21,20 @@ function OrderSuccessContent() {
   return (
     <main className="mx-auto max-w-xl p-4">
       <Card className="p-6 space-y-4">
-        <h1 className="text-2xl font-semibold">Order placed</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold">Order placed</h1>
+          {order ? (
+            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+              order.status === "paid"
+                ? "bg-emerald-500/15 text-emerald-500"
+                : order.status === "canceled"
+                ? "bg-rose-500/15 text-rose-500"
+                : "bg-amber-500/15 text-amber-500"
+            }`}>
+              {order.status}
+            </span>
+          ) : null}
+        </div>
         <p className="text-sm text-muted-foreground">
           Thanks! We received your order. You’ll get an email update shortly.
         </p>

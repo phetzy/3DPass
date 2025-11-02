@@ -100,12 +100,48 @@ function CheckoutContent() {
               <div>{formatUSD(Number(print.priceEach ?? 0))}</div>
               <div className="text-muted-foreground">Base fee</div>
               <div>{formatUSD(Number(print.baseFee ?? 0))}</div>
+              {typeof order?.amountTax === "number" ? (
+                <>
+                  <div className="text-muted-foreground">Tax</div>
+                  <div>{formatUSD(order.amountTax)}</div>
+                </>
+              ) : null}
               <div className="text-muted-foreground">Total</div>
-              <div className="font-semibold">{formatUSD(Number(print.total ?? 0))}</div>
+              <div className="font-semibold">
+                {typeof order?.amountTotal === "number" ? formatUSD(order.amountTotal) : formatUSD(Number(print.total ?? 0))}
+              </div>
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">Loading order…</p>
           )}
+          {order?.billingAddress || order?.shippingAddress ? (
+            <div className="mt-3 grid grid-cols-2 gap-4 text-xs">
+              {order?.billingAddress ? (
+                <div>
+                  <div className="mb-1 font-medium">Billing address</div>
+                  <div className="text-muted-foreground whitespace-pre-line">
+                    {(order.billingAddress.line1 || "") + (order.billingAddress.line2 ? "\n" + order.billingAddress.line2 : "")}
+                    {(order.billingAddress.city || order.billingAddress.state || order.billingAddress.postal_code)
+                      ? `\n${order.billingAddress.city ?? ""}${order.billingAddress.city ? ", " : ""}${order.billingAddress.state ?? ""} ${order.billingAddress.postal_code ?? ""}`
+                      : ""}
+                    {order.billingAddress.country ? `\n${order.billingAddress.country}` : ""}
+                  </div>
+                </div>
+              ) : null}
+              {order?.shippingAddress ? (
+                <div>
+                  <div className="mb-1 font-medium">Shipping address</div>
+                  <div className="text-muted-foreground whitespace-pre-line">
+                    {(order.shippingAddress.line1 || "") + (order.shippingAddress.line2 ? "\n" + order.shippingAddress.line2 : "")}
+                    {(order.shippingAddress.city || order.shippingAddress.state || order.shippingAddress.postal_code)
+                      ? `\n${order.shippingAddress.city ?? ""}${order.shippingAddress.city ? ", " : ""}${order.shippingAddress.state ?? ""} ${order.shippingAddress.postal_code ?? ""}`
+                      : ""}
+                    {order.shippingAddress.country ? `\n${order.shippingAddress.country}` : ""}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
           <Button variant="outline" onClick={() => router.push("/upload")}>Change model</Button>
         </Card>
       </section>
