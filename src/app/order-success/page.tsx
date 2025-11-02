@@ -15,8 +15,8 @@ function OrderSuccessContent() {
   const params = useSearchParams();
   const router = useRouter();
   const orderId = params.get("orderId");
-  const order = useQuery(orderId ? api.orders.getOrderById : undefined as any, orderId ? { orderId: orderId as any } : undefined as any);
-  const print = useQuery(order ? api.prints.getPrintById : undefined as any, order ? { printId: order.printId } : undefined as any);
+  const order = useQuery((api as any).orders.getOrderById, orderId ? ({ orderId: orderId as any }) : undefined);
+  const print = useQuery((api as any).prints.getPrintById, order ? ({ printId: order.printId }) : undefined);
 
   return (
     <main className="mx-auto max-w-xl p-4">

@@ -3,8 +3,17 @@ import { api } from "./_generated/api";
 import { v } from "convex/values";
 
 export const createCheckoutSession = action({
-  args: { orderId: v.id("orders") },
-  handler: async (ctx, { orderId }) => {
+  args: {
+    orderId: v.id("orders"),
+    fullName: v.string(),
+    email: v.string(),
+    address1: v.string(),
+    city: v.string(),
+    state: v.string(),
+    zip: v.string(),
+    notes: v.optional(v.string()),
+  },
+  handler: async (ctx, { orderId, fullName, email, address1, city, state, zip, notes }) => {
     "use node";
     const Stripe = (await import("stripe")).default;
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
@@ -44,14 +53,41 @@ export const createCheckoutSession = action({
       });
     }
 
+    // Create a Stripe Customer with the provided contact/shipping info to prefill Checkout.
+    const customer = await stripe.customers.create({
+      name: fullName,
+      email,
+      address: {
+        line1: address1,
+        city,
+        state,
+        postal_code: zip,
+        country: "US",
+      },
+      shipping: {
+        name: fullName,
+        address: {
+          line1: address1,
+          city,
+          state,
+          postal_code: zip,
+          country: "US",
+        },
+      },
+      metadata: { orderId: String(orderId) },
+    });
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items,
       automatic_tax: { enabled: true },
+      billing_address_collection: "required",
       shipping_address_collection: { allowed_countries: ["US"] },
+      customer: customer.id,
+      customer_update: { address: "auto", shipping: "auto" },
       success_url: `${siteUrl}/order-success?orderId=${orderId}`,
       cancel_url: `${siteUrl}/checkout?orderId=${orderId}`,
-      metadata: { orderId: String(orderId) },
+      metadata: { orderId: String(orderId), notes: notes ?? "" },
     });
 
     await ctx.runMutation(a.orders.setStripeSessionId, { orderId, sessionId: session.id });

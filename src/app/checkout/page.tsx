@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { MATERIALS, type MaterialId, type PrintQuality } from "@/lib/materials";
-import { useAction } from "convex/react";
+import { MATERIALS, MATERIAL_COLORS, type MaterialId, type PrintQuality } from "@/lib/materials";
+import { useAction, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 
 function formatUSD(n: number) {
@@ -23,29 +23,31 @@ function CheckoutContent() {
   const [error, setError] = useState<string | null>(null);
 
   const createSession = useAction((api as any).checkout.createCheckoutSession);
-
-  const summary = useMemo(() => {
-    const orderId = params.get("orderId") ?? "";
-    const file = params.get("file") ?? "";
-    const material = (params.get("material") as MaterialId | null) ?? "pla";
-    const quality = (params.get("quality") as PrintQuality | null) ?? "standard";
-    const grams_each = Number(params.get("grams_each") ?? 0);
-    const price_each = Number(params.get("price_each") ?? 0);
-    const qty = Number(params.get("qty") ?? 1);
-    const total = Number(params.get("total") ?? price_each * qty);
-    const base_fee = Number(params.get("base_fee") ?? 0);
-    const scale = Number(params.get("scale") ?? 1);
-    const color = params.get("color") ?? "";
-    const colorHex = params.get("colorHex") ?? "";
-    return { orderId, file, material, quality, grams_each, price_each, qty, total, scale, color, colorHex, base_fee };
-  }, [params]);
+  const orderId = params.get("orderId") ?? "";
+  const order = useQuery((api as any).orders.getOrderById, orderId ? ({ orderId } as any) : undefined);
+  const print = useQuery((api as any).prints.getPrintById, order ? ({ printId: order.printId } as any) : undefined);
+  const colorHex = useMemo(() => {
+    if (!print) return "";
+    const set = (MATERIAL_COLORS as any)[print.material as MaterialId];
+    const c = set?.find((x: any) => x.id === print.color);
+    return c?.hex ?? "";
+  }, [print]);
 
   async function placeOrder(formData: FormData) {
     try {
       setPlacing(true);
       setError(null);
-      if (!summary.orderId) throw new Error("Missing orderId");
-      const { url } = await createSession({ orderId: summary.orderId as any });
+      if (!orderId) throw new Error("Missing orderId");
+      const { url } = await createSession({
+        orderId: orderId as any,
+        fullName: String(formData.get("fullName") || ""),
+        email: String(formData.get("email") || ""),
+        address1: String(formData.get("address1") || ""),
+        city: String(formData.get("city") || ""),
+        state: String(formData.get("state") || ""),
+        zip: String(formData.get("zip") || ""),
+        notes: String(formData.get("notes") || ""),
+      });
       if (!url) throw new Error("Failed to create checkout session");
       window.location.href = url as string;
     } catch (e: any) {
@@ -59,34 +61,51 @@ function CheckoutContent() {
     <main className="mx-auto grid max-w-5xl gap-6 p-4 md:grid-cols-2">
       <section className="space-y-3">
         <Card className="p-4 space-y-3">
-          <h1 className="text-xl font-semibold">Order summary</h1>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="text-muted-foreground">File</div>
-            <div className="truncate" title={summary.file}>{summary.file || "(not provided)"}</div>
-            <div className="text-muted-foreground">Material</div>
-            <div>{MATERIALS[summary.material].label}</div>
-            <div className="text-muted-foreground">Quality</div>
-            <div className="capitalize">{summary.quality}</div>
-            <div className="text-muted-foreground">Color</div>
-            <div className="inline-flex items-center gap-2">
-              {summary.colorHex ? (
-                <span className="inline-block size-4 rounded-full border" style={{ backgroundColor: summary.colorHex }} />
-              ) : null}
-              <span className="capitalize">{summary.color || "—"}</span>
-            </div>
-            <div className="text-muted-foreground">Qty</div>
-            <div>{summary.qty}</div>
-            <div className="text-muted-foreground">Scale</div>
-            <div>{Math.round(summary.scale * 100)}%</div>
-            <div className="text-muted-foreground">Weight (each)</div>
-            <div>{summary.grams_each.toLocaleString()} g</div>
-            <div className="text-muted-foreground">Price (each)</div>
-            <div>{formatUSD(summary.price_each)}</div>
-            <div className="text-muted-foreground">Base fee</div>
-            <div>{formatUSD(summary.base_fee)}</div>
-            <div className="text-muted-foreground">Total</div>
-            <div className="font-semibold">{formatUSD(summary.total)}</div>
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-semibold">Order summary</h1>
+            {order ? (
+              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                order.status === "paid"
+                  ? "bg-emerald-500/15 text-emerald-500"
+                  : order.status === "canceled"
+                  ? "bg-rose-500/15 text-rose-500"
+                  : "bg-amber-500/15 text-amber-500"
+              }`}>
+                {order.status}
+              </span>
+            ) : null}
           </div>
+          {print ? (
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="text-muted-foreground">File</div>
+              <div className="truncate" title={print.fileName}>{print.fileName || "(not provided)"}</div>
+              <div className="text-muted-foreground">Material</div>
+              <div>{MATERIALS[print.material as MaterialId]?.label ?? print.material}</div>
+              <div className="text-muted-foreground">Quality</div>
+              <div className="capitalize">{print.quality}</div>
+              <div className="text-muted-foreground">Color</div>
+              <div className="inline-flex items-center gap-2">
+                {colorHex ? (
+                  <span className="inline-block size-4 rounded-full border" style={{ backgroundColor: colorHex }} />
+                ) : null}
+                <span className="capitalize">{print.color}</span>
+              </div>
+              <div className="text-muted-foreground">Qty</div>
+              <div>{print.qty}</div>
+              <div className="text-muted-foreground">Scale</div>
+              <div>{Math.round((print.scale || 1) * 100)}%</div>
+              <div className="text-muted-foreground">Weight (each)</div>
+              <div>{Number(print.gramsEach ?? 0).toLocaleString()} g</div>
+              <div className="text-muted-foreground">Price (each)</div>
+              <div>{formatUSD(Number(print.priceEach ?? 0))}</div>
+              <div className="text-muted-foreground">Base fee</div>
+              <div>{formatUSD(Number(print.baseFee ?? 0))}</div>
+              <div className="text-muted-foreground">Total</div>
+              <div className="font-semibold">{formatUSD(Number(print.total ?? 0))}</div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">Loading order…</p>
+          )}
           <Button variant="outline" onClick={() => router.push("/upload")}>Change model</Button>
         </Card>
       </section>
@@ -139,7 +158,7 @@ function CheckoutContent() {
               <p className="text-sm text-destructive" aria-live="polite">{error}</p>
             ) : null}
 
-            <Button type="submit" className="w-full" disabled={placing}>
+            <Button type="submit" className="w-full" disabled={placing || (order && order.status !== "draft") || !print}>
               {placing ? "Placing order..." : "Place order"}
             </Button>
           </form>
