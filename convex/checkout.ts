@@ -47,6 +47,8 @@ export const createCheckoutSession = action({
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items,
+      automatic_tax: { enabled: true },
+      shipping_address_collection: { allowed_countries: ["US"] },
       success_url: `${siteUrl}/order-success?orderId=${orderId}`,
       cancel_url: `${siteUrl}/checkout?orderId=${orderId}`,
       metadata: { orderId: String(orderId) },

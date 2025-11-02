@@ -15,7 +15,7 @@ export const stripeWebhook = httpAction(async (ctx, request) => {
   let event: any;
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
-    event = stripe.webhooks.constructEvent(raw, sig, secret);
+    event = await stripe.webhooks.constructEventAsync(raw, sig, secret);
   } catch (err: any) {
     return new Response(`Webhook Error: ${err.message ?? "invalid signature"}`, { status: 400 });
   }
