@@ -7,6 +7,7 @@ const schema = defineSchema({
   prints: defineTable({
     fileName: v.string(),
     storageId: v.id("_storage"),
+    mime: v.optional(v.string()),
     material: v.string(),
     quality: v.string(),
     color: v.string(),
@@ -24,6 +25,7 @@ const schema = defineSchema({
     stripeSessionId: v.optional(v.string()),
     status: v.string(), // draft | paid | canceled
     createdAt: v.number(),
+    livemode: v.optional(v.boolean()),
     amountTotal: v.optional(v.number()), // USD
     amountTax: v.optional(v.number()),   // USD
     customerEmail: v.optional(v.string()),

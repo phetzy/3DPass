@@ -33,6 +33,7 @@ export const stripeWebhook = httpAction(async (ctx, request) => {
         const s: any = sResp as any;
         await ctx.runMutation((api as any).orders.applySessionDetails, {
           orderId,
+          livemode: !!s.livemode,
           amountTotal: s?.amount_total ? Number((s.amount_total as number) / 100) : undefined,
           amountTax: s?.total_details?.amount_tax ? Number((s.total_details.amount_tax as number) / 100) : undefined,
           customerEmail: s?.customer_details?.email ?? undefined,

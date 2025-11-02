@@ -45,6 +45,7 @@ export const markOrderCanceled = mutation({
 export const applySessionDetails = mutation({
   args: {
     orderId: v.id("orders"),
+    livemode: v.optional(v.boolean()),
     amountTotal: v.optional(v.number()),
     amountTax: v.optional(v.number()),
     customerEmail: v.optional(v.string()),
