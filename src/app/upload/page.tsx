@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import * as THREE from "three";
 import { FileDropzone } from "@/components/file-dropzone";
@@ -41,6 +41,7 @@ export default function UploadPage() {
   const [sliderPct, setSliderPct] = useState<number>(100);
   const [readProgress, setReadProgress] = useState<number>(0);
   const [parsing, setParsing] = useState<boolean>(false);
+  const [parseProgress, setParseProgress] = useState<number>(0);
   const colorOptions = useMemo(() => MATERIAL_COLORS[material], [material]);
   const [colorId, setColorId] = useState<string>(colorOptions?.[0]?.id ?? "black");
   const selectedColor = useMemo(
@@ -75,6 +76,23 @@ export default function UploadPage() {
       setParsing(false);
     }
   }, []);
+
+  // Simulated determinate parsing progress (loaders don't expose granular progress)
+  useEffect(() => {
+    if (parsing) {
+      setParseProgress((p) => (p < 5 ? 5 : p));
+      const id = setInterval(() => {
+        setParseProgress((p) => Math.min(90, p + 1 + Math.random() * 5));
+      }, 120);
+      return () => clearInterval(id);
+    } else {
+      if (parseProgress > 0 && parseProgress < 100) {
+        setParseProgress(100);
+        const t = setTimeout(() => setParseProgress(0), 400);
+        return () => clearTimeout(t);
+      }
+    }
+  }, [parsing, parseProgress]);
 
   // P1S build volume (mm)
   const BUILD = { x: 256, y: 256, z: 256 } as const;
@@ -125,12 +143,17 @@ export default function UploadPage() {
           <h2 className="mb-2 text-lg font-semibold">Preview</h2>
           {loading ? (
             <div className="space-y-2">
-              <Progress value={Math.round((readProgress || 0) * 100)} />
-              <p className="text-xs text-muted-foreground">
-                {parsing
-                  ? "Parsing model..."
-                  : `Reading file ${Math.round((readProgress || 0) * 100)}%`}
-              </p>
+              {parsing ? (
+                <>
+                  <Progress value={Math.round(parseProgress)} />
+                  <p className="text-xs text-muted-foreground">Parsing model {Math.round(parseProgress)}%</p>
+                </>
+              ) : (
+                <>
+                  <Progress value={Math.round((readProgress || 0) * 100)} />
+                  <p className="text-xs text-muted-foreground">Reading file {Math.round((readProgress || 0) * 100)}%</p>
+                </>
+              )}
             </div>
           ) : geometry ? (
             <ModelViewer geometry={geometry} scale={clampedScale} color={selectedColor?.hex} />
@@ -280,6 +303,8 @@ export default function UploadPage() {
               <div>{estimate.grams_each.toLocaleString()} g</div>
               <div className="text-muted-foreground">Price (each)</div>
               <div>{formatUSD(estimate.price_usd_each)}</div>
+              <div className="text-muted-foreground">Base fee</div>
+              <div>{formatUSD(estimate.base_fee_usd)}</div>
               <div className="text-muted-foreground">Quantity</div>
               <div>{quantity}</div>
               <div className="text-muted-foreground">Total</div>
@@ -301,6 +326,7 @@ export default function UploadPage() {
                   grams_each: String(estimate.grams_each),
                   price_each: String(estimate.price_usd_each),
                   total: String(estimate.total_price_usd),
+                  base_fee: String(estimate.base_fee_usd),
                   qty: String(quantity),
                   scale: String(clampedScale),
                   color: selectedColor?.id || "",

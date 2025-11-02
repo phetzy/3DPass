@@ -7,6 +7,7 @@ export type PriceEstimate = {
   grams_each: number;
   price_usd_each: number;
   total_price_usd: number;
+  base_fee_usd: number;
 };
 
 export function estimatePrice(
@@ -41,5 +42,6 @@ export function estimatePrice(
     grams_each: Number(grams_each.toFixed(1)),
     price_usd_each: per_item_subtotal,
     total_price_usd,
+    base_fee_usd: PRICING_CONSTANTS.base_fee_usd,
   };
 }

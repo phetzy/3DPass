@@ -41,7 +41,7 @@ function ModelMesh({ geometry, color = "#888" }: { geometry: THREE.BufferGeometr
   );
 }
 
-export function ModelViewer({ geometry, className, color = "#6b7280", background = "#0b0b0c", scale = 1 }: ModelViewerProps) {
+export function ModelViewer({ geometry, className, color = "#6b7280", background = "var(--muted)", scale = 1 }: ModelViewerProps) {
   return (
     <div className={className} style={{ height: 360, width: "100%", borderRadius: 12, overflow: "hidden" }}>
       <Canvas shadows camera={{ position: [0, 0, 140], fov: 45 }} style={{ background }}>

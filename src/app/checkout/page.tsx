@@ -28,10 +28,11 @@ export default function CheckoutPage() {
     const price_each = Number(params.get("price_each") ?? 0);
     const qty = Number(params.get("qty") ?? 1);
     const total = Number(params.get("total") ?? price_each * qty);
+    const base_fee = Number(params.get("base_fee") ?? 0);
     const scale = Number(params.get("scale") ?? 1);
     const color = params.get("color") ?? "";
     const colorHex = params.get("colorHex") ?? "";
-    return { file, material, quality, grams_each, price_each, qty, total, scale, color, colorHex };
+    return { file, material, quality, grams_each, price_each, qty, total, scale, color, colorHex, base_fee };
   }, [params]);
 
   async function placeOrder(formData: FormData) {
@@ -86,6 +87,8 @@ export default function CheckoutPage() {
             <div>{summary.grams_each.toLocaleString()} g</div>
             <div className="text-muted-foreground">Price (each)</div>
             <div>{formatUSD(summary.price_each)}</div>
+            <div className="text-muted-foreground">Base fee</div>
+            <div>{formatUSD(summary.base_fee)}</div>
             <div className="text-muted-foreground">Total</div>
             <div className="font-semibold">{formatUSD(summary.total)}</div>
           </div>
