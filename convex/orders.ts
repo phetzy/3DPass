@@ -28,3 +28,38 @@ export const markOrderCanceled = mutation({
     await ctx.db.patch(orderId, { status: "canceled" });
   },
 });
+
+export const applySessionDetails = mutation({
+  args: {
+    orderId: v.id("orders"),
+    amountTotal: v.optional(v.number()),
+    amountTax: v.optional(v.number()),
+    customerEmail: v.optional(v.string()),
+    customerName: v.optional(v.string()),
+    paymentIntentId: v.optional(v.string()),
+    billingAddress: v.optional(
+      v.object({
+        line1: v.optional(v.string()),
+        line2: v.optional(v.string()),
+        city: v.optional(v.string()),
+        state: v.optional(v.string()),
+        postal_code: v.optional(v.string()),
+        country: v.optional(v.string()),
+      }),
+    ),
+    shippingAddress: v.optional(
+      v.object({
+        line1: v.optional(v.string()),
+        line2: v.optional(v.string()),
+        city: v.optional(v.string()),
+        state: v.optional(v.string()),
+        postal_code: v.optional(v.string()),
+        country: v.optional(v.string()),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const { orderId, ...rest } = args;
+    await ctx.db.patch(orderId, rest);
+  },
+});
