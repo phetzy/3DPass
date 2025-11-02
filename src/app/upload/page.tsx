@@ -15,6 +15,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
+import { useAction, useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import {
   Select,
   SelectTrigger,
@@ -33,6 +35,8 @@ export default function UploadPage() {
   const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const [material, setMaterial] = useState<MaterialId>("pla");
   const [quality, setQuality] = useState<PrintQuality>("standard");
@@ -49,6 +53,10 @@ export default function UploadPage() {
     [colorOptions, colorId],
   );
 
+  // Convex functions
+  const generateUploadUrl = useAction(api.files.generateUploadUrl);
+  const createPrintAndOrder = useMutation(api.prints.createPrintAndOrder);
+
   const onFiles = useCallback(async (files: File[]) => {
     const file = files[0];
     if (!file) return;
@@ -57,6 +65,7 @@ export default function UploadPage() {
     setReadProgress(0);
     setParsing(false);
     setFileName(file.name);
+    setSelectedFile(file);
     try {
       const geom = await loadGeometryFromFile(file, {
         onReadProgress: (p) => setReadProgress(p || 0),
@@ -313,31 +322,61 @@ export default function UploadPage() {
           ) : (
             <p className="text-sm text-muted-foreground">Upload a model to see the estimate.</p>
           )}
-
           <div className="flex gap-2">
             <Button
-              disabled={!geometry || loading || !estimate}
-              onClick={() => {
-                if (!estimate) return;
-                const params = new URLSearchParams({
-                  file: fileName,
-                  material,
-                  quality,
-                  grams_each: String(estimate.grams_each),
-                  price_each: String(estimate.price_usd_each),
-                  total: String(estimate.total_price_usd),
-                  base_fee: String(estimate.base_fee_usd),
-                  qty: String(quantity),
-                  scale: String(clampedScale),
-                  color: selectedColor?.id || "",
-                  colorHex: selectedColor?.hex || "",
-                });
-                router.push(`/checkout?${params.toString()}`);
+              disabled={!geometry || loading || uploading || !estimate || !selectedFile}
+              onClick={async () => {
+                if (!estimate || !selectedFile) return;
+                setUploading(true);
+                try {
+                  const url = await generateUploadUrl();
+                  const res = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": selectedFile.type || "application/octet-stream" },
+                    body: selectedFile,
+                  });
+                  if (!res.ok) throw new Error("Upload failed");
+                  const { storageId } = await res.json();
+                  const { orderId } = await createPrintAndOrder({
+                    fileName,
+                    storageId,
+                    material,
+                    quality,
+                    color: selectedColor?.id || "black",
+                    scale: clampedScale,
+                    qty: quantity,
+                    gramsEach: estimate.grams_each,
+                    priceEach: estimate.price_usd_each,
+                    baseFee: estimate.base_fee_usd,
+                    total: estimate.total_price_usd,
+                  });
+                  const params = new URLSearchParams({
+                    orderId,
+                    file: fileName,
+                    material,
+                    quality,
+                    grams_each: String(estimate.grams_each),
+                    price_each: String(estimate.price_usd_each),
+                    total: String(estimate.total_price_usd),
+                    base_fee: String(estimate.base_fee_usd),
+                    qty: String(quantity),
+                    scale: String(clampedScale),
+                    color: selectedColor?.id || "",
+                    colorHex: selectedColor?.hex || "",
+                  });
+                  router.push(`/checkout?${params.toString()}`);
+                } catch (e: any) {
+                  setError(e?.message ?? "Failed to upload and create order");
+                } finally {
+                  setUploading(false);
+                }
               }}
             >
-              Continue
+              {uploading ? "Uploading…" : "Continue"}
             </Button>
-            <Button variant="outline" disabled={loading} onClick={() => { setGeometry(null); setFileName(""); }}>Reset</Button>
+            <Button variant="outline" disabled={loading} onClick={() => { setGeometry(null); setFileName(""); }}>
+              Reset
+            </Button>
           </div>
         </Card>
       </section>

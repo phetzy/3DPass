@@ -9,10 +9,13 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as checkout from "../checkout.js";
 import type * as files from "../files.js";
 import type * as http from "../http.js";
+import type * as orders from "../orders.js";
 import type * as otp_ResendOTP from "../otp/ResendOTP.js";
 import type * as prints from "../prints.js";
+import type * as webhooks from "../webhooks.js";
 
 import type {
   ApiFromModules,
@@ -30,10 +33,13 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  checkout: typeof checkout;
   files: typeof files;
   http: typeof http;
+  orders: typeof orders;
   "otp/ResendOTP": typeof otp_ResendOTP;
   prints: typeof prints;
+  webhooks: typeof webhooks;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 

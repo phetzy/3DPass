@@ -1,4 +1,4 @@
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 export const createPrintAndOrder = mutation({
@@ -28,5 +28,12 @@ export const createPrintAndOrder = mutation({
       createdAt: now,
     });
     return { printId, orderId };
+  },
+});
+
+export const getPrintById = query({
+  args: { printId: v.id("prints") },
+  handler: async (ctx, { printId }) => {
+    return await ctx.db.get(printId);
   },
 });

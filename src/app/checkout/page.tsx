@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { MATERIALS, type MaterialId, type PrintQuality } from "@/lib/materials";
+import { useAction } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 
 function formatUSD(n: number) {
   return new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" }).format(n);
@@ -20,7 +22,10 @@ function CheckoutContent() {
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const createSession = useAction((api as any).checkout.createCheckoutSession);
+
   const summary = useMemo(() => {
+    const orderId = params.get("orderId") ?? "";
     const file = params.get("file") ?? "";
     const material = (params.get("material") as MaterialId | null) ?? "pla";
     const quality = (params.get("quality") as PrintQuality | null) ?? "standard";
@@ -32,27 +37,17 @@ function CheckoutContent() {
     const scale = Number(params.get("scale") ?? 1);
     const color = params.get("color") ?? "";
     const colorHex = params.get("colorHex") ?? "";
-    return { file, material, quality, grams_each, price_each, qty, total, scale, color, colorHex, base_fee };
+    return { orderId, file, material, quality, grams_each, price_each, qty, total, scale, color, colorHex, base_fee };
   }, [params]);
 
   async function placeOrder(formData: FormData) {
     try {
       setPlacing(true);
       setError(null);
-      // TODO: Send to backend (Convex mutation) and kick off Stripe Checkout in the next iteration.
-      // For MVP, just navigate to a mocked success page with query params.
-      const qs = new URLSearchParams({
-        ...Object.fromEntries(formData.entries()) as Record<string, string>,
-        file: summary.file,
-        material: summary.material,
-        quality: summary.quality,
-        grams_each: String(summary.grams_each),
-        price_each: String(summary.price_each),
-        qty: String(summary.qty),
-        total: String(summary.total),
-        scale: String(summary.scale),
-      });
-      router.push(`/order-success?${qs.toString()}`);
+      if (!summary.orderId) throw new Error("Missing orderId");
+      const { url } = await createSession({ orderId: summary.orderId as any });
+      if (!url) throw new Error("Failed to create checkout session");
+      window.location.href = url as string;
     } catch (e: any) {
       setError(e?.message ?? "Failed to place order");
     } finally {
