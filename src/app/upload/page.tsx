@@ -156,7 +156,7 @@ export default function UploadPage() {
               )}
             </div>
           ) : geometry ? (
-            <ModelViewer geometry={geometry} scale={clampedScale} color={selectedColor?.hex} />
+            <ModelViewer geometry={geometry} scale={1} color={selectedColor?.hex} />
           ) : (
             <div className="flex h-[360px] items-center justify-center text-sm text-muted-foreground">
               No model loaded yet
