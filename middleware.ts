@@ -1,5 +1,6 @@
 import { convexAuthNextjsMiddleware } from "@convex-dev/auth/nextjs/server";
 
+// Default Convex Auth middleware; no custom gating for now.
 export default convexAuthNextjsMiddleware();
 
 export const config = {

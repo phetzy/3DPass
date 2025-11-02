@@ -15,6 +15,7 @@ import type * as http from "../http.js";
 import type * as orders from "../orders.js";
 import type * as otp_ResendOTP from "../otp/ResendOTP.js";
 import type * as prints from "../prints.js";
+import type * as users from "../users.js";
 import type * as webhooks from "../webhooks.js";
 
 import type {
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   orders: typeof orders;
   "otp/ResendOTP": typeof otp_ResendOTP;
   prints: typeof prints;
+  users: typeof users;
   webhooks: typeof webhooks;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
