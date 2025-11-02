@@ -24,6 +24,31 @@ const schema = defineSchema({
     stripeSessionId: v.optional(v.string()),
     status: v.string(), // draft | paid | canceled
     createdAt: v.number(),
+    amountTotal: v.optional(v.number()), // USD
+    amountTax: v.optional(v.number()),   // USD
+    customerEmail: v.optional(v.string()),
+    customerName: v.optional(v.string()),
+    paymentIntentId: v.optional(v.string()),
+    billingAddress: v.optional(
+      v.object({
+        line1: v.optional(v.string()),
+        line2: v.optional(v.string()),
+        city: v.optional(v.string()),
+        state: v.optional(v.string()),
+        postal_code: v.optional(v.string()),
+        country: v.optional(v.string()),
+      }),
+    ),
+    shippingAddress: v.optional(
+      v.object({
+        line1: v.optional(v.string()),
+        line2: v.optional(v.string()),
+        city: v.optional(v.string()),
+        state: v.optional(v.string()),
+        postal_code: v.optional(v.string()),
+        country: v.optional(v.string()),
+      }),
+    ),
   }),
 });
 
