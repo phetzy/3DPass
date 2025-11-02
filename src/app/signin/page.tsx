@@ -52,7 +52,9 @@ export default function SignInPage() {
   return (
     <main className="min-h-dvh flex flex-col items-center justify-center gap-6 p-4">
       <Card className="w-full max-w-sm p-6 space-y-4">
-        <h2 className="text-xl font-semibold">Email + Password</h2>
+        <h2 className="text-xl font-semibold">
+            {step === "signIn" ? "Sign In" : "Join 3D Pass"}
+        </h2>
         <form
           action={async (fd) => {
             fd.set("flow", step);
@@ -98,9 +100,9 @@ export default function SignInPage() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="ghost"
+                    variant="default"
                     size="icon-lg"
-                    className="bg-neutral-900 text-white hover:opacity-90"
+                    className="hover:opacity-90"
                     aria-label="Continue with GitHub"
                     onClick={() => void signIn("github")}
                   >
@@ -113,9 +115,9 @@ export default function SignInPage() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="ghost"
+                    variant="default"
                     size="icon-lg"
-                    className="bg-[#4285F4] text-white hover:opacity-90"
+                    className="hover:opacity-90"
                     aria-label="Continue with Google"
                     onClick={() => void signIn("google")}
                   >
@@ -128,9 +130,9 @@ export default function SignInPage() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="ghost"
+                    variant="default"
                     size="icon-lg"
-                    className="bg-emerald-600 text-white hover:opacity-90"
+                    className="hover:opacity-90"
                     aria-label="Send magic link"
                     onClick={() => {
                       const email = (document.getElementById("email") as HTMLInputElement)?.value
@@ -152,9 +154,9 @@ export default function SignInPage() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="ghost"
+                    variant="default"
                     size="icon-lg"
-                    className="bg-purple-600 text-white hover:opacity-90"
+                    className="hover:opacity-90"
                     aria-label="Send one-time code"
                     onClick={() => {
                       const email = (document.getElementById("email") as HTMLInputElement)?.value
