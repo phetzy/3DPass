@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
 import {
   Select,
   SelectTrigger,
@@ -36,6 +37,7 @@ export default function UploadPage() {
   const [quality, setQuality] = useState<PrintQuality>("standard");
   const [quantity, setQuantity] = useState<number>(1);
   const [scalePct, setScalePct] = useState<number>(100);
+  const [sliderPct, setSliderPct] = useState<number>(100);
   const colorOptions = useMemo(() => MATERIAL_COLORS[material], [material]);
   const [colorId, setColorId] = useState<string>(colorOptions?.[0]?.id ?? "black");
   const selectedColor = useMemo(
@@ -198,6 +200,17 @@ export default function UploadPage() {
             </div>
             <div className="space-y-1">
               <Label>Scale (%)</Label>
+              <Slider
+                value={[Math.round(sliderPct)]}
+                min={1}
+                max={sizeAndLimits ? Math.floor((sizeAndLimits.maxScale || 1) * 100) : 300}
+                step={1}
+                onValueChange={([v]) => {
+                  setSliderPct(v);
+                  setScalePct(v); // immediate visual update
+                }}
+                className="py-3"
+              />
               <Input
                 type="number"
                 min={1}
@@ -211,6 +224,7 @@ export default function UploadPage() {
                   if (!sizeAndLimits) return;
                   const maxPct = Math.floor((sizeAndLimits.maxScale || 1) * 100);
                   if (scalePct > maxPct) setScalePct(maxPct);
+                  setSliderPct(scalePct);
                 }}
               />
             </div>

@@ -2,7 +2,7 @@
 
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Bounds, useBounds } from "@react-three/drei";
+import { TrackballControls, Bounds, useBounds } from "@react-three/drei";
 import { useEffect, useMemo, useRef } from "react";
 
 export type ModelViewerProps = {
@@ -47,8 +47,7 @@ export function ModelViewer({ geometry, className, color = "#6b7280", background
       <Canvas shadows camera={{ position: [0, 0, 140], fov: 45 }} style={{ background }}>
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 20, 10]} intensity={0.7} castShadow />
-        <gridHelper args={[400, 20, "#2a2a2b", "#1b1b1c"]} />
-        <OrbitControls makeDefault enablePan enableZoom />
+        <TrackballControls makeDefault rotateSpeed={1} zoomSpeed={1.2} panSpeed={0.8} />
         <Bounds clip fit margin={1.2}>
           {geometry ? (
             <group scale={[scale, scale, scale]}>
