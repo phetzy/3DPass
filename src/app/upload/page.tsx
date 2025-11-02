@@ -14,6 +14,7 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectTrigger,
@@ -38,6 +39,8 @@ export default function UploadPage() {
   const [quantity, setQuantity] = useState<number>(1);
   const [scalePct, setScalePct] = useState<number>(100);
   const [sliderPct, setSliderPct] = useState<number>(100);
+  const [readProgress, setReadProgress] = useState<number>(0);
+  const [parsing, setParsing] = useState<boolean>(false);
   const colorOptions = useMemo(() => MATERIAL_COLORS[material], [material]);
   const [colorId, setColorId] = useState<string>(colorOptions?.[0]?.id ?? "black");
   const selectedColor = useMemo(
@@ -50,9 +53,14 @@ export default function UploadPage() {
     if (!file) return;
     setError(null);
     setLoading(true);
+    setReadProgress(0);
+    setParsing(false);
     setFileName(file.name);
     try {
-      const geom = await loadGeometryFromFile(file);
+      const geom = await loadGeometryFromFile(file, {
+        onReadProgress: (p) => setReadProgress(p || 0),
+        onParsingStart: () => setParsing(true),
+      });
       if (!geom) {
         setGeometry(null);
         setError("This file type isn't supported in the MVP (try .stl or .3mf)");
@@ -64,6 +72,7 @@ export default function UploadPage() {
       setGeometry(null);
     } finally {
       setLoading(false);
+      setParsing(false);
     }
   }, []);
 
@@ -114,7 +123,16 @@ export default function UploadPage() {
 
         <Card className="p-4">
           <h2 className="mb-2 text-lg font-semibold">Preview</h2>
-          {geometry ? (
+          {loading ? (
+            <div className="space-y-2">
+              <Progress value={Math.round((readProgress || 0) * 100)} />
+              <p className="text-xs text-muted-foreground">
+                {parsing
+                  ? "Parsing model..."
+                  : `Reading file ${Math.round((readProgress || 0) * 100)}%`}
+              </p>
+            </div>
+          ) : geometry ? (
             <ModelViewer geometry={geometry} scale={clampedScale} color={selectedColor?.hex} />
           ) : (
             <div className="flex h-[360px] items-center justify-center text-sm text-muted-foreground">
