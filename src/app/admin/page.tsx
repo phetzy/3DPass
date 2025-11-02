@@ -47,21 +47,29 @@ export default function AdminPage() {
           <Input placeholder="Search by file, email, name" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-sm" />
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[1000px] text-sm">
             <thead className="text-xs font-medium text-muted-foreground">
               <tr>
-                <th className="px-4 py-2 text-left w-[35%]">File</th>
-                <th className="px-4 py-2 text-left w-[20%]">Material/Quality</th>
-                <th className="px-4 py-2 text-left w-[10%]">Qty</th>
-                <th className="px-4 py-2 text-left w-[15%]">Total</th>
-                <th className="px-4 py-2 text-left w-[20%]">Actions</th>
+                <th className="px-4 py-2 text-left w-[18%]">File</th>
+                <th className="px-4 py-2 text-left w-[12%]">Customer</th>
+                <th className="px-4 py-2 text-left w-[16%]">Email</th>
+                <th className="px-4 py-2 text-left w-[12%]">Material/Quality</th>
+                <th className="px-4 py-2 text-left w-[6%]">Qty</th>
+                <th className="px-4 py-2 text-left w-[8%]">Total</th>
+                <th className="px-4 py-2 text-left w-[8%]">Actions</th>
               </tr>
             </thead>
             <tbody>
             {filtered?.map((r: any) => (
               <tr key={String(r.order._id)} className="border-t">
                 <td className="px-4 py-2 align-middle">
-                  <div className="truncate max-w-[280px]" title={r.print?.fileName}>{r.print?.fileName ?? "—"}</div>
+                  <div className="truncate max-w-[120px]" title={r.print?.fileName}>{r.print?.fileName ?? "—"}</div>
+                </td>
+                <td className="px-4 py-2 align-middle">
+                  <div className="truncate max-w-[180px]" title={r.order?.customerName || ''}>{r.order?.customerName ?? "—"}</div>
+                </td>
+                <td className="px-4 py-2 align-middle">
+                  <div className="truncate max-w-[220px]" title={r.order?.customerEmail || ''}>{r.order?.customerEmail ?? "—"}</div>
                 </td>
                 <td className="px-4 py-2 align-middle">{r.print?.material?.toUpperCase()} • {r.print?.quality}</td>
                 <td className="px-4 py-2 align-middle">{r.print?.qty ?? 0}</td>
